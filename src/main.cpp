@@ -55,6 +55,9 @@ void setup()
 
 void loop()
 {
+  M5.Lcd.drawJpgFile(SD, "/img/airplane320.jpg");
+  delay(3000);
+  M5.Lcd.fillScreen(BLACK);
   String payload;
   http.begin(apiAddress);
   int httpCode = http.GET();
