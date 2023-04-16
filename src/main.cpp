@@ -1,12 +1,19 @@
+#define LGFX_AUTODETECT
+
 #include <Arduino.h>
 #include <M5Stack.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <time.h>
+#include <LovyanGFX.hpp>
+#include <LGFX_AUTODETECT.hpp>
 
 #define WIFI_SSID ""
 #define WIFI_PASSWORD ""
+
+static LGFX lcd;
+static LGFX_Sprite sprite(&lcd);
 
 String apiAddress = "http://data-live.flightradar24.com/zones/fcgi/feed.js?bounds=35.6,35.5,139.7,139.8&adsb=1&mlat=1&faa=1&flarm=1&estimated=1&air=1&gnd=1&vehicles=1&gliders=1&array=1";
 HTTPClient http;
@@ -20,10 +27,16 @@ String unix2datetime(time_t unixTime) {
   return dateTimeString;
 }
 
+int width = 160;
+int height = 120;
+
 void setup()
 {
+  // 初期化処理
+  lcd.init();
+  lcd.clear(TFT_BLACK);
+  SD.begin(TFCARD_CS_PIN, SPI, 20000000);
   M5.begin();
-  Serial.begin(115200);
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
 
   // ディスプレイの設定
@@ -51,12 +64,17 @@ void setup()
   M5.Lcd.print(WiFi.localIP());
   delay(1000);
   M5.Lcd.fillScreen(BLACK);
+
+  sprite.createSprite(width, height);
+  sprite.drawPngFile(SD, "/img/airplane.png", 0, 0);
 }
 
 void loop()
 {
-  M5.Lcd.drawJpgFile(SD, "/img/airplane320.jpg");
-  delay(3000);
+  for (int i = 0; i < 10; i ++) {
+    sprite.pushRotateZoom(width, height, 0, i, i);
+    delay(100);
+  }
   M5.Lcd.fillScreen(BLACK);
   String payload;
   http.begin(apiAddress);
